@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📚 Library Management System</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+    h1 { color: #333; }
+    textarea, input, select, button {
+      margin: 5px 0; padding: 8px; width: 100%;
+      box-sizing: border-box;
+    }
+    .book-list { margin-top: 20px; background: #fff; padding: 10px; border-radius: 5px; }
+    .log { white-space: pre-wrap; background: #eaeaea; padding: 10px; margin-top: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+  <h1>📚 Library Management System</h1>
+
+  <select id="action">
+    <option value="add">➕ Add Book</option>
+    <option value="search">🔍 Search Book</option>
+    <option value="display">📖 Display All Books</option>
+    <option value="report">📝 Generate Report</option>
+    <option value="remove">❌ Remove Book</option>
+    <option value="issue">📕 Issue Book</option>
+    <option value="return">📗 Return Book</option>
+    <option value="issued">📂 Display Issued Books</option>
+  </select>
+
+  <input type="text" id="title" placeholder="Book Title">
+  <input type="text" id="author" placeholder="Author Name (if adding book)">
+  <button onclick="performAction()">Submit</button>
+
+  <div class="log" id="log">🖥️ Logs will appear here...</div>
+
+  <script>
+    let bookTitles = [];
+    let authors = [];
+    let issuedBooks = new Set();
+
+    function performAction() {
+      const action = document.getElementById("action").value;
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      let log = "";
+
+      switch(action) {
+        case "add":
+          if (title && author) {
+            bookTitles.push(title);
+            authors.push(author);
+            log = `✅ Book added: "${title}" by ${author}`;
+          } else {
+            log = "❗ Please enter both title and author.";
+          }
+          break;
+
+        case "search":
+          if (!title) {
+            log = "❗ Please enter a keyword to search.";
+            break;
+          }
+          let found = false;
+          log = "🔍 Search Results:\n";
+          bookTitles.forEach((t, i) => {
+            if (t.toLowerCase().includes(title.toLowerCase())) {
+              log += `• "${t}" by ${authors[i]}\n`;
+              found = true;
+            }
+          });
+          if (!found) log += "No matching books found.";
+          break;
+
+        case "display":
+          if (bookTitles.length === 0) {
+            log = "📂 No books in the library.";
+          } else {
+            log = "📖 All Books:\n";
+            bookTitles.forEach((t, i) => {
+              log += `${i + 1}. "${t}" by ${authors[i]}\n`;
+            });
+          }
+          break;
+
+        case "report":
+          log = "📝 Library Report:\n";
+          bookTitles.forEach((t, i) => {
+            log += `• "${t}" by ${authors[i]}\n`;
+          });
+          break;
+
+        case "remove":
+          let index = bookTitles.indexOf(title);
+          if (index !== -1) {
+            issuedBooks.delete(bookTitles[index]);
+            bookTitles.splice(index, 1);
+            authors.splice(index, 1);
+            log = `✅ Removed book: "${title}"`;
+          } else {
+            log = "❌ Book not found.";
+          }
+          break;
+
+        case "issue":
+          if (!bookTitles.includes(title)) {
+            log = "❌ Book not found.";
+          } else if (issuedBooks.has(title)) {
+            log = "⚠ Book already issued.";
+          } else {
+            issuedBooks.add(title);
+            log = `📕 Book issued: "${title}"`;
+          }
+          break;
+
+        case "return":
+          if (issuedBooks.has(title)) {
+            issuedBooks.delete(title);
+            log = `📗 Book returned: "${title}"`;
+          } else {
+            log = "⚠ Book was not issued.";
+          }
+          break;
+
+        case "issued":
+          if (issuedBooks.size === 0) {
+            log = "📂 No books are currently issued.";
+          } else {
+            log = "📂 Issued Books:\n";
+            issuedBooks.forEach(book => log += `• ${book}\n`);
+          }
+          break;
+      }
+
+      document.getElementById("log").textContent = log;
+      document.getElementById("title").value = "";
+      document.getElementById("author").value = "";
+    }
+  </script>
+</body>
+</html>
